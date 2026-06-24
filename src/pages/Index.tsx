@@ -116,6 +116,23 @@ export default function Index() {
     setTimeout(() => setToast(null), 3500);
   };
 
+  const setEnRoute = (id: string) => {
+    setOrders((prev) => prev.map((o) => o.id === id ? { ...o, status: 'В пути', step: 2 } : o));
+    setToast('🚗 Статус обновлён — мастер в пути');
+    setTimeout(() => setToast(null), 3000);
+  };
+
+  const completeOrder = (id: string) => {
+    setOrders((prev) => prev.map((o) => o.id === id ? { ...o, status: 'Выполнен', step: 4 } : o));
+    playNotificationSound();
+    setToast('🎉 Заказ выполнен!');
+    setTimeout(() => setToast(null), 3000);
+  };
+
+  const declineRequest = (id: string) => {
+    setOrders((prev) => prev.filter((o) => o.id !== id));
+  };
+
   return (
     <div className="min-h-screen bg-[#111111] flex justify-center">
       <div className="w-full max-w-md bg-[#111111] relative pb-24 min-h-screen">
@@ -123,7 +140,7 @@ export default function Index() {
         {tab === 'map' && <MapScreen />}
         {tab === 'orders' && <OrdersScreen orders={orders} onNew={() => setTab('home')} />}
         {tab === 'support' && <SupportScreen />}
-        {tab === 'master' && masterAuth && <MasterScreen requests={newRequests} onAccept={acceptRequest} onLogout={() => { setMasterAuth(false); setTab('home'); }} />}
+        {tab === 'master' && masterAuth && <MasterScreen requests={newRequests} activeOrders={orders.filter(o => o.status === 'Принят' || o.status === 'В пути')} onAccept={acceptRequest} onEnRoute={setEnRoute} onComplete={completeOrder} onDecline={declineRequest} onLogout={() => { setMasterAuth(false); setTab('home'); }} />}
         {tab === 'master' && !masterAuth && <MasterLoginScreen onSuccess={() => setMasterAuth(true)} onBack={() => setTab('home')} />}
 
         {orderTarget && (
@@ -546,7 +563,15 @@ function MasterLoginScreen({ onSuccess, onBack }: { onSuccess: () => void; onBac
   );
 }
 
-function MasterScreen({ requests, onAccept, onLogout }: { requests: Order[]; onAccept: (id: string) => void; onLogout: () => void }) {
+function MasterScreen({ requests, activeOrders, onAccept, onEnRoute, onComplete, onDecline, onLogout }: {
+  requests: Order[];
+  activeOrders: Order[];
+  onAccept: (id: string) => void;
+  onEnRoute: (id: string) => void;
+  onComplete: (id: string) => void;
+  onDecline: (id: string) => void;
+  onLogout: () => void;
+}) {
   const stats = [
     { label: 'Заказов', value: '4' },
     { label: 'Заработано', value: '5 400' },
@@ -627,12 +652,12 @@ function MasterScreen({ requests, onAccept, onLogout }: { requests: Order[]; onA
               {r.phone && <p className="text-xs text-[#666] mt-0.5 flex items-center gap-1"><Icon name="Phone" size={12} />{r.phone}</p>}
               <div className="flex gap-2 mt-3">
                 <button onClick={() => onAccept(r.id)} className="flex-1 bg-[#FFD600] text-black rounded-xl py-2.5 text-xs font-black uppercase hover:opacity-90 transition">Принять</button>
-                <button className="flex-1 bg-[#111] border border-[#2a2a2a] text-[#666] rounded-xl py-2.5 text-xs font-bold uppercase">Отклонить</button>
+                <button onClick={() => onDecline(r.id)} className="flex-1 bg-[#111] border border-[#2a2a2a] text-[#666] rounded-xl py-2.5 text-xs font-bold uppercase hover:border-red-500/50 hover:text-red-400 transition">Отклонить</button>
               </div>
             </div>
           ))}
           {requests.length === 0 && (
-            <div className="text-center py-10 text-[#444]">
+            <div className="text-center py-8 text-[#444]">
               <Icon name="Inbox" size={36} className="mx-auto mb-3 opacity-40" />
               <p className="text-sm font-semibold">Новых заявок пока нет</p>
               <p className="text-xs mt-1">Они появятся здесь автоматически</p>
@@ -640,6 +665,39 @@ function MasterScreen({ requests, onAccept, onLogout }: { requests: Order[]; onA
           )}
         </div>
       </div>
+
+      {/* Активные заказы */}
+      {activeOrders.length > 0 && (
+        <div className="px-5 mt-5 mb-4">
+          <h3 className="font-display font-black text-white text-lg uppercase tracking-tight mb-3">В работе</h3>
+          <div className="space-y-3">
+            {activeOrders.map((o) => (
+              <div key={o.id} className="bg-[#1a1a1a] border border-emerald-500/30 rounded-2xl p-4 animate-fade-in">
+                <div className="flex items-start justify-between gap-2 mb-1">
+                  <p className="font-bold text-white text-sm">{o.service}</p>
+                  <span className={`text-[10px] font-black px-2 py-0.5 rounded-full ${o.status === 'В пути' ? 'bg-blue-500/20 text-blue-400' : 'bg-emerald-500/20 text-emerald-400'}`}>
+                    {o.status}
+                  </span>
+                </div>
+                {o.addr && <p className="text-xs text-[#666] flex items-center gap-1"><Icon name="MapPin" size={12} />{o.addr}</p>}
+                {o.phone && <p className="text-xs text-[#666] mt-0.5 flex items-center gap-1"><Icon name="Phone" size={12} />{o.phone}</p>}
+                <div className="flex gap-2 mt-3">
+                  {o.status === 'Принят' && (
+                    <button onClick={() => onEnRoute(o.id)} className="flex-1 bg-blue-500 text-white rounded-xl py-2.5 text-xs font-black uppercase hover:opacity-90 transition flex items-center justify-center gap-1.5">
+                      <Icon name="Car" size={14} />Мастер в пути
+                    </button>
+                  )}
+                  {o.status === 'В пути' && (
+                    <button onClick={() => onComplete(o.id)} className="flex-1 bg-emerald-500 text-white rounded-xl py-2.5 text-xs font-black uppercase hover:opacity-90 transition flex items-center justify-center gap-1.5">
+                      <Icon name="CircleCheck" size={14} />Заказ выполнен
+                    </button>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
