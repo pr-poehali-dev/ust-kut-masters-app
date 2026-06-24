@@ -69,11 +69,7 @@ const masters = [
 
 type Order = { id: string; service: string; master: string; status: string; step: number; price: string; time: string; addr?: string; phone?: string; workPrice?: number };
 
-const initialOrders: Order[] = [
-  { id: '#1042', service: 'Установка смесителя', master: 'Алексей Петров', status: 'В пути', step: 2, price: '1 200 ₽', time: 'Сегодня, 14:30' },
-  { id: '#1038', service: 'Замена розеток (3 шт)', master: 'Сергей Иванов', status: 'Выполнен', step: 4, price: '2 100 ₽', time: 'Вчера, 11:00' },
-  { id: '#1031', service: 'Сборка шкафа', master: 'Игорь Соколов', status: 'Выполнен', step: 4, price: '1 800 ₽', time: '12 июня' },
-];
+const initialOrders: Order[] = [];
 
 const statusFlow = ['Принят', 'Выехал', 'В пути', 'Работает', 'Выполнен'];
 
@@ -356,6 +352,13 @@ function OrdersScreen({ orders, onNew }: { orders: Order[]; onNew: () => void })
         </button>
       </div>
       <div className="px-5 space-y-3">
+        {orders.length === 0 && (
+          <div className="text-center py-16 text-[#444]">
+            <Icon name="ClipboardList" size={40} className="mx-auto mb-3 opacity-30" />
+            <p className="text-sm font-semibold text-[#555]">Заказов пока нет</p>
+            <p className="text-xs mt-1">Оформите первый заказ на главной</p>
+          </div>
+        )}
         {orders.map((o) => (
           <div key={o.id} className="bg-[#1a1a1a] border border-[#2a2a2a] rounded-2xl p-4">
             <div className="flex items-start justify-between gap-2">
