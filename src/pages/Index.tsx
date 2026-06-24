@@ -117,8 +117,8 @@ export default function Index() {
   };
 
   const setEnRoute = (id: string) => {
-    setOrders((prev) => prev.map((o) => o.id === id ? { ...o, status: 'В пути', step: 2 } : o));
-    setToast('🚗 Статус обновлён — мастер в пути');
+    setOrders((prev) => prev.map((o) => o.id === id ? { ...o, status: 'В пути', step: 1 } : o));
+    setToast('🚗 Мастер выехал к вам!');
     setTimeout(() => setToast(null), 3000);
   };
 
@@ -368,6 +368,8 @@ function OrdersScreen({ orders, onNew }: { orders: Order[]; onNew: () => void })
               <span className={`text-[10px] font-black px-2.5 py-1 rounded-lg flex-shrink-0 uppercase tracking-wide ${
                 o.status === 'Выполнен' ? 'bg-emerald-500/20 text-emerald-400' :
                 o.status === 'Новая заявка' ? 'bg-[#FFD600]/20 text-[#FFD600]' :
+                o.status === 'В пути' ? 'bg-blue-500/20 text-blue-400' :
+                o.status === 'Принят' ? 'bg-orange-500/20 text-orange-400' :
                 'bg-white/10 text-white'
               }`}>
                 {o.status}
