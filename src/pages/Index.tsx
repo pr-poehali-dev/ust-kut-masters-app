@@ -389,9 +389,24 @@ function OrdersScreen({ orders, onNew }: { orders: Order[]; onNew: () => void })
                 <Icon name="LoaderCircle" size={14} className="animate-spin" />Ждём отклика мастера
               </div>
             )}
-            <div className="flex items-center justify-between mt-3 pt-3 border-t border-[#2a2a2a]">
+            <div className="mt-3 pt-3 border-t border-[#2a2a2a]">
+              {o.status !== 'Новая заявка' && (
+                <div className="space-y-1.5 mb-2">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs text-[#666]">Стоимость работ</span>
+                    <span className="text-xs font-bold text-white">2 000 ₽</span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs text-[#666]">Выезд мастера</span>
+                    <span className="text-xs font-bold text-white">500 ₽</span>
+                  </div>
+                  <div className="flex items-center justify-between pt-1.5 border-t border-[#2a2a2a]">
+                    <span className="text-xs font-black text-[#FFD600] uppercase tracking-wide">Итого</span>
+                    <span className="font-black text-[#FFD600] text-sm">2 500 ₽</span>
+                  </div>
+                </div>
+              )}
               <span className="text-xs text-[#555] flex items-center gap-1"><Icon name="Clock" size={11} />{o.time}</span>
-              <span className="font-black text-white text-sm">{o.price}</span>
             </div>
           </div>
         ))}
