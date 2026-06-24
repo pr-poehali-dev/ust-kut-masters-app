@@ -1,6 +1,29 @@
 import { useState } from 'react';
 import Icon from '@/components/ui/icon';
 
+type AudioCtxType = typeof AudioContext;
+declare global { interface Window { webkitAudioContext?: AudioCtxType; } }
+
+function playNotificationSound() {
+  const Ctx = window.AudioContext || window.webkitAudioContext;
+  if (!Ctx) return;
+  const ctx = new Ctx();
+  [880, 1100].forEach((freq, i) => {
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    osc.type = 'sine';
+    osc.frequency.value = freq;
+    const t = ctx.currentTime + i * 0.18;
+    gain.gain.setValueAtTime(0, t);
+    gain.gain.linearRampToValueAtTime(0.35, t + 0.01);
+    gain.gain.exponentialRampToValueAtTime(0.001, t + 0.35);
+    osc.start(t);
+    osc.stop(t + 0.35);
+  });
+}
+
 const MAP_IMG = 'https://cdn.poehali.dev/projects/3056daaf-9ac7-4923-8d17-8291d5ab8cd2/files/8d3b0a2c-604f-4aa0-8df1-bf12a18bdddd.jpg';
 const LOGO_IMG = 'https://cdn.poehali.dev/projects/3056daaf-9ac7-4923-8d17-8291d5ab8cd2/bucket/01d0c1d5-6c45-4cb0-95fb-1b90edd87102.png';
 
@@ -59,8 +82,9 @@ export default function Index() {
 
   const acceptRequest = (id: string) => {
     setOrders((prev) => prev.map((o) => o.id === id ? { ...o, status: 'Принят', step: 0, price: '1 000 ₽' } : o));
-    setToast('Заявка принята');
-    setTimeout(() => setToast(null), 2500);
+    playNotificationSound();
+    setToast('✅ Заказ принят! Мастер выехал к вам');
+    setTimeout(() => setToast(null), 3500);
   };
 
   return (
