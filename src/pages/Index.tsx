@@ -67,7 +67,7 @@ const masters = [
   { name: 'Игорь Соколов', job: 'Сборка мебели', rating: 4.7, jobs: 156, price: 'от 900 ₽/час', dist: '3.1 км', online: true, init: 'ИС' },
 ];
 
-type Order = { id: string; service: string; master: string; status: string; step: number; price: string; time: string; addr?: string; phone?: string };
+type Order = { id: string; service: string; master: string; status: string; step: number; price: string; time: string; addr?: string; phone?: string; workPrice?: number };
 
 const initialOrders: Order[] = [
   { id: '#1042', service: 'Установка смесителя', master: 'Алексей Петров', status: 'В пути', step: 2, price: '1 200 ₽', time: 'Сегодня, 14:30' },
@@ -146,6 +146,10 @@ export default function Index() {
     setOrders((prev) => prev.filter((o) => o.id !== id));
   };
 
+  const setWorkPrice = (id: string, workPrice: number) => {
+    setOrders((prev) => prev.map((o) => o.id === id ? { ...o, workPrice } : o));
+  };
+
   return (
     <div className="min-h-screen bg-[#111111] flex justify-center">
       <div className="w-full max-w-md bg-[#111111] relative pb-24 min-h-screen">
@@ -153,7 +157,7 @@ export default function Index() {
         {tab === 'map' && <MapScreen />}
         {tab === 'orders' && <OrdersScreen orders={orders} onNew={() => setTab('home')} />}
         {tab === 'support' && <SupportScreen />}
-        {tab === 'master' && masterAuth && <MasterScreen requests={newRequests} activeOrders={orders.filter(o => o.status === 'Принят' || o.status === 'В пути')} onAccept={acceptRequest} onEnRoute={setEnRoute} onComplete={completeOrder} onDecline={declineRequest} onLogout={() => { setMasterAuth(false); setTab('home'); }} />}
+        {tab === 'master' && masterAuth && <MasterScreen requests={newRequests} activeOrders={orders.filter(o => o.status === 'Принят' || o.status === 'В пути')} onAccept={acceptRequest} onEnRoute={setEnRoute} onComplete={completeOrder} onDecline={declineRequest} onSetPrice={setWorkPrice} onLogout={() => { setMasterAuth(false); setTab('home'); }} />}
         {tab === 'master' && !masterAuth && <MasterLoginScreen onSuccess={() => setMasterAuth(true)} onBack={() => setTab('home')} />}
 
         {orderTarget && (
@@ -390,11 +394,11 @@ function OrdersScreen({ orders, onNew }: { orders: Order[]; onNew: () => void })
               </div>
             )}
             <div className="mt-3 pt-3 border-t border-[#2a2a2a]">
-              {o.status !== 'Новая заявка' && (
+              {o.workPrice && (
                 <div className="space-y-1.5 mb-2">
                   <div className="flex items-center justify-between">
                     <span className="text-xs text-[#666]">Стоимость работ</span>
-                    <span className="text-xs font-bold text-white">2 000 ₽</span>
+                    <span className="text-xs font-bold text-white">{o.workPrice.toLocaleString()} ₽</span>
                   </div>
                   <div className="flex items-center justify-between">
                     <span className="text-xs text-[#666]">Выезд мастера</span>
@@ -402,7 +406,7 @@ function OrdersScreen({ orders, onNew }: { orders: Order[]; onNew: () => void })
                   </div>
                   <div className="flex items-center justify-between pt-1.5 border-t border-[#2a2a2a]">
                     <span className="text-xs font-black text-[#FFD600] uppercase tracking-wide">Итого</span>
-                    <span className="font-black text-[#FFD600] text-sm">2 500 ₽</span>
+                    <span className="font-black text-[#FFD600] text-sm">{(o.workPrice + 500).toLocaleString()} ₽</span>
                   </div>
                 </div>
               )}
@@ -574,13 +578,97 @@ function MasterLoginScreen({ onSuccess, onBack }: { onSuccess: () => void; onBac
   );
 }
 
-function MasterScreen({ requests, activeOrders, onAccept, onEnRoute, onComplete, onDecline, onLogout }: {
+function ActiveOrderCard({ o, onEnRoute, onComplete, onSetPrice }: {
+  o: Order;
+  onEnRoute: (id: string) => void;
+  onComplete: (id: string) => void;
+  onSetPrice: (id: string, price: number) => void;
+}) {
+  const [priceInput, setPriceInput] = useState(o.workPrice ? String(o.workPrice) : '');
+  const [saved, setSaved] = useState(!!o.workPrice);
+
+  const handleSave = () => {
+    const val = parseInt(priceInput);
+    if (!val || val <= 0) return;
+    onSetPrice(o.id, val);
+    setSaved(true);
+  };
+
+  return (
+    <div className="bg-[#1a1a1a] border border-emerald-500/30 rounded-2xl p-4 animate-fade-in">
+      <div className="flex items-start justify-between gap-2 mb-1">
+        <p className="font-bold text-white text-sm">{o.service}</p>
+        <span className={`text-[10px] font-black px-2 py-0.5 rounded-full ${o.status === 'В пути' ? 'bg-blue-500/20 text-blue-400' : 'bg-orange-500/20 text-orange-400'}`}>
+          {o.status}
+        </span>
+      </div>
+      {o.addr && <p className="text-xs text-[#666] flex items-center gap-1"><Icon name="MapPin" size={12} />{o.addr}</p>}
+      {o.phone && <p className="text-xs text-[#666] mt-0.5 flex items-center gap-1"><Icon name="Phone" size={12} />{o.phone}</p>}
+
+      {/* Стоимость работ */}
+      <div className="mt-3 pt-3 border-t border-[#2a2a2a]">
+        <p className="text-[#FFD600] text-[10px] font-black uppercase tracking-widest mb-2">Стоимость работ</p>
+        {saved && o.workPrice ? (
+          <div className="flex items-center justify-between">
+            <div className="space-y-1">
+              <div className="flex justify-between gap-8">
+                <span className="text-xs text-[#666]">Работа</span>
+                <span className="text-xs font-bold text-white">{o.workPrice.toLocaleString()} ₽</span>
+              </div>
+              <div className="flex justify-between gap-8">
+                <span className="text-xs text-[#666]">Выезд</span>
+                <span className="text-xs font-bold text-white">500 ₽</span>
+              </div>
+              <div className="flex justify-between gap-8 pt-1 border-t border-[#2a2a2a]">
+                <span className="text-xs font-black text-[#FFD600]">Итого</span>
+                <span className="text-xs font-black text-[#FFD600]">{(o.workPrice + 500).toLocaleString()} ₽</span>
+              </div>
+            </div>
+            <button onClick={() => setSaved(false)} className="text-[#555] hover:text-white transition ml-4">
+              <Icon name="Pencil" size={14} />
+            </button>
+          </div>
+        ) : (
+          <div className="flex gap-2">
+            <input
+              type="number"
+              value={priceInput}
+              onChange={(e) => setPriceInput(e.target.value)}
+              placeholder="Сумма в рублях"
+              inputMode="numeric"
+              className="flex-1 bg-[#111] border border-[#2a2a2a] text-white rounded-xl px-3 py-2 text-sm outline-none focus:border-[#FFD600] transition placeholder:text-[#444]"
+            />
+            <button onClick={handleSave} disabled={!priceInput} className="bg-[#FFD600] text-black rounded-xl px-4 py-2 text-xs font-black disabled:opacity-30 hover:opacity-90 transition">
+              Сохранить
+            </button>
+          </div>
+        )}
+      </div>
+
+      <div className="flex gap-2 mt-3">
+        {o.status === 'Принят' && (
+          <button onClick={() => onEnRoute(o.id)} className="flex-1 bg-blue-500 text-white rounded-xl py-2.5 text-xs font-black uppercase hover:opacity-90 transition flex items-center justify-center gap-1.5">
+            <Icon name="Car" size={14} />Мастер в пути
+          </button>
+        )}
+        {o.status === 'В пути' && (
+          <button onClick={() => onComplete(o.id)} className="flex-1 bg-emerald-500 text-white rounded-xl py-2.5 text-xs font-black uppercase hover:opacity-90 transition flex items-center justify-center gap-1.5">
+            <Icon name="CircleCheck" size={14} />Заказ выполнен
+          </button>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function MasterScreen({ requests, activeOrders, onAccept, onEnRoute, onComplete, onDecline, onSetPrice, onLogout }: {
   requests: Order[];
   activeOrders: Order[];
   onAccept: (id: string) => void;
   onEnRoute: (id: string) => void;
   onComplete: (id: string) => void;
   onDecline: (id: string) => void;
+  onSetPrice: (id: string, price: number) => void;
   onLogout: () => void;
 }) {
   const stats = [
@@ -649,28 +737,7 @@ function MasterScreen({ requests, activeOrders, onAccept, onEnRoute, onComplete,
           <h3 className="font-display font-black text-white text-lg uppercase tracking-tight mb-3">В работе</h3>
           <div className="space-y-3">
             {activeOrders.map((o) => (
-              <div key={o.id} className="bg-[#1a1a1a] border border-emerald-500/30 rounded-2xl p-4 animate-fade-in">
-                <div className="flex items-start justify-between gap-2 mb-1">
-                  <p className="font-bold text-white text-sm">{o.service}</p>
-                  <span className={`text-[10px] font-black px-2 py-0.5 rounded-full ${o.status === 'В пути' ? 'bg-blue-500/20 text-blue-400' : 'bg-orange-500/20 text-orange-400'}`}>
-                    {o.status}
-                  </span>
-                </div>
-                {o.addr && <p className="text-xs text-[#666] flex items-center gap-1"><Icon name="MapPin" size={12} />{o.addr}</p>}
-                {o.phone && <p className="text-xs text-[#666] mt-0.5 flex items-center gap-1"><Icon name="Phone" size={12} />{o.phone}</p>}
-                <div className="flex gap-2 mt-3">
-                  {o.status === 'Принят' && (
-                    <button onClick={() => onEnRoute(o.id)} className="flex-1 bg-blue-500 text-white rounded-xl py-2.5 text-xs font-black uppercase hover:opacity-90 transition flex items-center justify-center gap-1.5">
-                      <Icon name="Car" size={14} />Мастер в пути
-                    </button>
-                  )}
-                  {o.status === 'В пути' && (
-                    <button onClick={() => onComplete(o.id)} className="flex-1 bg-emerald-500 text-white rounded-xl py-2.5 text-xs font-black uppercase hover:opacity-90 transition flex items-center justify-center gap-1.5">
-                      <Icon name="CircleCheck" size={14} />Заказ выполнен
-                    </button>
-                  )}
-                </div>
-              </div>
+              <ActiveOrderCard key={o.id} o={o} onEnRoute={onEnRoute} onComplete={onComplete} onSetPrice={onSetPrice} />
             ))}
           </div>
         </div>
