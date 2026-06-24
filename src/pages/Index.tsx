@@ -21,7 +21,9 @@ const masters = [
   { name: 'Игорь Соколов', job: 'Сборка мебели', rating: 4.7, jobs: 156, price: 'от 900 ₽', dist: '3.1 км', online: true, init: 'ИС' },
 ];
 
-const orders = [
+type Order = { id: string; service: string; master: string; status: string; step: number; price: string; time: string; addr?: string; phone?: string };
+
+const initialOrders: Order[] = [
   { id: '#1042', service: 'Установка смесителя', master: 'Алексей Петров', status: 'В пути', step: 2, price: '1 200 ₽', time: 'Сегодня, 14:30' },
   { id: '#1038', service: 'Замена розеток (3 шт)', master: 'Сергей Иванов', status: 'Выполнен', step: 4, price: '2 100 ₽', time: 'Вчера, 11:00' },
   { id: '#1031', service: 'Сборка шкафа', master: 'Игорь Соколов', status: 'Выполнен', step: 4, price: '1 800 ₽', time: '12 июня' },
@@ -31,15 +33,50 @@ const statusFlow = ['Принят', 'Выехал', 'В пути', 'Работа
 
 export default function Index() {
   const [tab, setTab] = useState<Tab>('home');
+  const [orders, setOrders] = useState<Order[]>(initialOrders);
+  const [orderTarget, setOrderTarget] = useState<{ master?: typeof masters[0]; service?: string } | null>(null);
+  const [toast, setToast] = useState<string | null>(null);
+
+  const newRequests = orders.filter((o) => o.status === 'Новая заявка');
+
+  const createOrder = (data: { service: string; addr: string; phone: string; master: string }) => {
+    const id = '#' + (1043 + orders.length);
+    setOrders((prev) => [
+      { id, service: data.service, master: data.master, status: 'Новая заявка', step: -1, price: '—', time: 'Только что', addr: data.addr, phone: data.phone },
+      ...prev,
+    ]);
+    setOrderTarget(null);
+    setToast('Заявка отправлена! Мастер скоро откликнется');
+    setTimeout(() => setToast(null), 3000);
+  };
+
+  const acceptRequest = (id: string) => {
+    setOrders((prev) => prev.map((o) => o.id === id ? { ...o, status: 'Принят', step: 0, price: '1 000 ₽' } : o));
+    setToast('Заявка принята');
+    setTimeout(() => setToast(null), 2500);
+  };
 
   return (
     <div className="min-h-screen bg-background flex justify-center">
       <div className="w-full max-w-md bg-background relative pb-24 min-h-screen overflow-hidden">
-        {tab === 'home' && <HomeScreen />}
+        {tab === 'home' && <HomeScreen onOrder={(m) => setOrderTarget({ master: m })} onCategory={(s) => setOrderTarget({ service: s })} onCallMaster={() => setOrderTarget({})} />}
         {tab === 'map' && <MapScreen />}
-        {tab === 'orders' && <OrdersScreen />}
+        {tab === 'orders' && <OrdersScreen orders={orders} onNew={() => setTab('home')} />}
         {tab === 'support' && <SupportScreen />}
-        {tab === 'master' && <MasterScreen />}
+        {tab === 'master' && <MasterScreen requests={newRequests} onAccept={acceptRequest} />}
+
+        {orderTarget && (
+          <OrderModal
+            target={orderTarget}
+            onClose={() => setOrderTarget(null)}
+            onSubmit={createOrder}
+          />
+        )}
+        {toast && (
+          <div className="fixed bottom-28 left-1/2 -translate-x-1/2 z-[60] bg-primary text-primary-foreground px-5 py-3 rounded-2xl text-sm font-medium shadow-xl animate-scale-in flex items-center gap-2">
+            <Icon name="CircleCheck" size={18} />{toast}
+          </div>
+        )}
 
         <nav className="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-md bg-white/90 backdrop-blur-xl border-t border-border px-2 py-2 flex justify-around z-50">
           {([
@@ -82,7 +119,7 @@ function Header() {
   );
 }
 
-function HomeScreen() {
+function HomeScreen({ onOrder, onCategory, onCallMaster }: { onOrder: (m: typeof masters[0]) => void; onCategory: (s: string) => void; onCallMaster: () => void }) {
   return (
     <div className="animate-fade-in">
       <Header />
@@ -95,7 +132,7 @@ function HomeScreen() {
           </div>
           <h1 className="font-display font-extrabold text-2xl leading-tight relative">Мастер на час<br />за 15 минут</h1>
           <p className="text-sm text-primary-foreground/80 mt-2 relative max-w-[70%]">Проверенные специалисты Усть-Кута. Оплата после работы.</p>
-          <button className="mt-4 bg-accent text-accent-foreground font-semibold text-sm px-5 py-2.5 rounded-xl relative hover:opacity-90 transition">
+          <button onClick={onCallMaster} className="mt-4 bg-accent text-accent-foreground font-semibold text-sm px-5 py-2.5 rounded-xl relative hover:opacity-90 transition">
             Вызвать мастера
           </button>
         </div>
@@ -105,7 +142,7 @@ function HomeScreen() {
         <h3 className="font-display font-bold text-base mb-3">Услуги</h3>
         <div className="grid grid-cols-3 gap-3">
           {categories.map((c, i) => (
-            <button key={c.name} style={{ animationDelay: `${i * 60}ms` }} className="animate-scale-in opacity-0 bg-card border border-border rounded-2xl p-3 flex flex-col items-center gap-2 hover:border-primary transition">
+            <button key={c.name} onClick={() => onCategory(c.name)} style={{ animationDelay: `${i * 60}ms` }} className="animate-scale-in opacity-0 bg-card border border-border rounded-2xl p-3 flex flex-col items-center gap-2 hover:border-primary transition">
               <span className={`${c.color} w-11 h-11 rounded-xl flex items-center justify-center text-white`}>
                 <Icon name={c.icon} size={20} />
               </span>
@@ -121,14 +158,14 @@ function HomeScreen() {
           <span className="text-xs text-primary font-medium">Все</span>
         </div>
         <div className="space-y-3">
-          {masters.map((m) => <MasterCard key={m.name} m={m} />)}
+          {masters.map((m) => <MasterCard key={m.name} m={m} onOrder={onOrder} />)}
         </div>
       </div>
     </div>
   );
 }
 
-function MasterCard({ m }: { m: typeof masters[0] }) {
+function MasterCard({ m, onOrder }: { m: typeof masters[0]; onOrder: (m: typeof masters[0]) => void }) {
   return (
     <div className="bg-card border border-border rounded-2xl p-3 flex items-center gap-3">
       <div className="relative">
@@ -150,7 +187,7 @@ function MasterCard({ m }: { m: typeof masters[0] }) {
           <span className="text-muted-foreground flex items-center gap-0.5"><Icon name="MapPin" size={11} />{m.dist}</span>
         </div>
       </div>
-      <button className="bg-secondary text-secondary-foreground rounded-xl px-3 py-2 text-xs font-semibold hover:bg-primary hover:text-primary-foreground transition">
+      <button onClick={() => onOrder(m)} className="bg-secondary text-secondary-foreground rounded-xl px-3 py-2 text-xs font-semibold hover:bg-primary hover:text-primary-foreground transition">
         Заказать
       </button>
     </div>
@@ -191,11 +228,14 @@ function MapScreen() {
   );
 }
 
-function OrdersScreen() {
+function OrdersScreen({ orders, onNew }: { orders: Order[]; onNew: () => void }) {
   return (
     <div className="animate-fade-in">
-      <div className="px-5 pt-6 pb-2">
+      <div className="px-5 pt-6 pb-2 flex items-center justify-between">
         <h2 className="font-display font-extrabold text-2xl">Мои заказы</h2>
+        <button onClick={onNew} className="bg-primary text-primary-foreground rounded-xl px-3 py-2 text-xs font-semibold flex items-center gap-1">
+          <Icon name="Plus" size={14} />Новый
+        </button>
       </div>
       <div className="px-5 space-y-4 mt-2">
         {orders.map((o) => (
@@ -205,23 +245,71 @@ function OrdersScreen() {
                 <p className="font-semibold text-sm">{o.service}</p>
                 <p className="text-xs text-muted-foreground mt-0.5">{o.master} · {o.id}</p>
               </div>
-              <span className={`text-xs font-semibold px-2.5 py-1 rounded-lg ${o.status === 'Выполнен' ? 'bg-emerald-100 text-emerald-700' : 'bg-secondary text-primary'}`}>
+              <span className={`text-xs font-semibold px-2.5 py-1 rounded-lg ${o.status === 'Выполнен' ? 'bg-emerald-100 text-emerald-700' : o.status === 'Новая заявка' ? 'bg-amber-100 text-amber-700' : 'bg-secondary text-primary'}`}>
                 {o.status}
               </span>
             </div>
-            <div className="flex items-center gap-1 mt-4">
-              {statusFlow.map((s, i) => (
-                <div key={s} className="flex-1 flex flex-col items-center gap-1">
-                  <div className={`h-1.5 w-full rounded-full ${i <= o.step ? 'bg-primary' : 'bg-muted'}`} />
-                </div>
-              ))}
-            </div>
+            {o.step >= 0 ? (
+              <div className="flex items-center gap-1 mt-4">
+                {statusFlow.map((s, i) => (
+                  <div key={s} className="flex-1 flex flex-col items-center gap-1">
+                    <div className={`h-1.5 w-full rounded-full ${i <= o.step ? 'bg-primary' : 'bg-muted'}`} />
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="mt-3 flex items-center gap-2 text-xs text-amber-600">
+                <Icon name="LoaderCircle" size={14} className="animate-spin" />Ждём отклика мастера
+              </div>
+            )}
             <div className="flex items-center justify-between mt-3">
               <span className="text-xs text-muted-foreground flex items-center gap-1"><Icon name="Clock" size={12} />{o.time}</span>
               <span className="font-display font-bold text-sm">{o.price}</span>
             </div>
           </div>
         ))}
+      </div>
+    </div>
+  );
+}
+
+function OrderModal({ target, onClose, onSubmit }: { target: { master?: typeof masters[0]; service?: string }; onClose: () => void; onSubmit: (d: { service: string; addr: string; phone: string; master: string }) => void }) {
+  const [service, setService] = useState(target.service || target.master?.job || '');
+  const [addr, setAddr] = useState('');
+  const [phone, setPhone] = useState('');
+  const masterName = target.master?.name || 'Любой свободный мастер';
+  const valid = service.trim() && addr.trim() && phone.trim();
+
+  return (
+    <div className="fixed inset-0 z-[55] flex items-end justify-center bg-black/40 backdrop-blur-sm animate-fade-in" onClick={onClose}>
+      <div className="w-full max-w-md bg-card rounded-t-3xl p-5 pb-8 animate-scale-in" onClick={(e) => e.stopPropagation()}>
+        <div className="w-12 h-1.5 bg-muted rounded-full mx-auto mb-4" />
+        <div className="flex items-center gap-3 mb-5">
+          <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-primary to-accent flex items-center justify-center text-white font-display font-bold">
+            {target.master?.init || <Icon name="Wrench" size={20} />}
+          </div>
+          <div>
+            <p className="font-display font-bold text-base">Заказ мастера</p>
+            <p className="text-xs text-muted-foreground">{masterName}</p>
+          </div>
+        </div>
+
+        <label className="text-xs font-medium text-muted-foreground">Что нужно сделать</label>
+        <input value={service} onChange={(e) => setService(e.target.value)} placeholder="Например, починить кран"
+          className="w-full mt-1 mb-3 bg-secondary rounded-xl px-4 py-3 text-sm outline-none focus:ring-2 ring-primary" />
+
+        <label className="text-xs font-medium text-muted-foreground">Адрес в Усть-Куте</label>
+        <input value={addr} onChange={(e) => setAddr(e.target.value)} placeholder="ул. Кирова, 12, кв. 5"
+          className="w-full mt-1 mb-3 bg-secondary rounded-xl px-4 py-3 text-sm outline-none focus:ring-2 ring-primary" />
+
+        <label className="text-xs font-medium text-muted-foreground">Телефон</label>
+        <input value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="+7 (___) ___-__-__" inputMode="tel"
+          className="w-full mt-1 mb-5 bg-secondary rounded-xl px-4 py-3 text-sm outline-none focus:ring-2 ring-primary" />
+
+        <button disabled={!valid} onClick={() => onSubmit({ service, addr, phone, master: masterName })}
+          className="w-full bg-primary text-primary-foreground font-semibold py-3.5 rounded-xl disabled:opacity-40 transition hover:opacity-90">
+          Отправить заявку
+        </button>
       </div>
     </div>
   );
@@ -264,7 +352,7 @@ function SupportScreen() {
   );
 }
 
-function MasterScreen() {
+function MasterScreen({ requests, onAccept }: { requests: Order[]; onAccept: (id: string) => void }) {
   const stats = [
     { label: 'Заказов сегодня', value: '4', icon: 'ClipboardCheck' },
     { label: 'Заработано', value: '5 400 ₽', icon: 'Wallet' },
@@ -309,8 +397,25 @@ function MasterScreen() {
       </div>
 
       <div className="px-5 mt-5">
-        <h3 className="font-display font-bold text-base mb-3">Новые заявки</h3>
+        <div className="flex items-center gap-2 mb-3">
+          <h3 className="font-display font-bold text-base">Новые заявки</h3>
+          {requests.length > 0 && <span className="bg-accent text-accent-foreground text-[10px] font-bold px-2 py-0.5 rounded-full animate-scale-in">{requests.length}</span>}
+        </div>
         <div className="space-y-3">
+          {requests.map((r) => (
+            <div key={r.id} className="bg-card border border-accent/40 rounded-2xl p-4 animate-fade-in">
+              <div className="flex items-center justify-between">
+                <p className="font-semibold text-sm">{r.service}</p>
+                <span className="text-[10px] font-semibold text-accent flex items-center gap-1"><Icon name="Clock" size={11} />{r.time}</span>
+              </div>
+              <p className="text-xs text-muted-foreground mt-1 flex items-center gap-1"><Icon name="MapPin" size={12} />{r.addr || 'Усть-Кут'}</p>
+              {r.phone && <p className="text-xs text-muted-foreground mt-0.5 flex items-center gap-1"><Icon name="Phone" size={12} />{r.phone}</p>}
+              <div className="flex gap-2 mt-3">
+                <button onClick={() => onAccept(r.id)} className="flex-1 bg-primary text-primary-foreground rounded-xl py-2 text-xs font-semibold hover:opacity-90 transition">Принять</button>
+                <button className="flex-1 bg-secondary text-secondary-foreground rounded-xl py-2 text-xs font-semibold">Отклонить</button>
+              </div>
+            </div>
+          ))}
           {[
             { s: 'Течёт кран на кухне', addr: 'ул. Речников, 8', price: '900 ₽', dist: '1.1 км' },
             { s: 'Установить унитаз', addr: 'мкр. Лена, 22', price: '1 500 ₽', dist: '2.6 км' },
