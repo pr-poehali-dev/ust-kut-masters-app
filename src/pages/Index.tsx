@@ -267,46 +267,6 @@ function HomeScreen({ onOrder, onCategory, onCallMaster }: { onOrder: (m: typeof
         </div>
       </div>
 
-      {/* Masters */}
-      <div className="px-5 mt-6 mb-2">
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="font-display font-black text-white text-xl uppercase tracking-tight">Мастера</h2>
-          <div className="flex items-center gap-1.5">
-            <span className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse" />
-            <span className="text-emerald-500 text-xs font-bold">3 онлайн</span>
-          </div>
-        </div>
-        <div className="space-y-3">
-          {masters.map((m) => <MasterCard key={m.name} m={m} onOrder={onOrder} />)}
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function MasterCard({ m, onOrder }: { m: typeof masters[0]; onOrder: (m: typeof masters[0]) => void }) {
-  return (
-    <div className="bg-[#1a1a1a] border border-[#2a2a2a] rounded-2xl p-4 flex items-center gap-3">
-      <div className="relative flex-shrink-0">
-        <div className="w-14 h-14 rounded-xl bg-[#FFD600] flex items-center justify-center font-display font-black text-black text-lg">
-          {m.init}
-        </div>
-        {m.online && <span className="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 bg-emerald-500 rounded-full ring-2 ring-[#1a1a1a]" />}
-      </div>
-      <div className="flex-1 min-w-0">
-        <p className="font-bold text-white text-sm">{m.name}</p>
-        <p className="text-[#888] text-xs">{m.job}</p>
-        <div className="flex items-center gap-3 mt-1.5">
-          <span className="flex items-center gap-0.5 text-[#FFD600] text-xs font-bold">
-            <Icon name="Star" size={11} className="fill-[#FFD600] text-[#FFD600]" />{m.rating}
-          </span>
-          <span className="text-[#555] text-xs">{m.jobs} заказов</span>
-          <span className="text-[#555] text-xs flex items-center gap-0.5"><Icon name="MapPin" size={11} />{m.dist}</span>
-        </div>
-      </div>
-      <button onClick={() => onOrder(m)} className="bg-[#FFD600] text-black rounded-xl px-3 py-2 text-xs font-black hover:opacity-90 transition flex-shrink-0">
-        Заказать
-      </button>
     </div>
   );
 }
