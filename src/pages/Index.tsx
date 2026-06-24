@@ -117,7 +117,12 @@ export default function Index() {
   };
 
   const sendPush = (title: string, body: string) => {
-    if ('Notification' in window && Notification.permission === 'granted') {
+    if (!('Notification' in window) || Notification.permission !== 'granted') return;
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.ready.then((reg) => {
+        reg.active?.postMessage({ type: 'SHOW_NOTIFICATION', title, body, icon: LOGO_IMG });
+      });
+    } else {
       new Notification(title, { body, icon: LOGO_IMG });
     }
   };
@@ -192,13 +197,17 @@ function Header() {
   const handleBell = async () => {
     if (notifStatus === 'unsupported') return;
     if (notifStatus === 'granted') {
-      new Notification('МастерОФФ', { body: 'Уведомления уже включены!', icon: LOGO_IMG });
+      navigator.serviceWorker.ready.then((reg) => {
+        reg.active?.postMessage({ type: 'SHOW_NOTIFICATION', title: 'МастерОФФ', body: 'Уведомления уже включены!', icon: LOGO_IMG });
+      });
       return;
     }
     const result = await Notification.requestPermission();
     setNotifStatus(result);
     if (result === 'granted') {
-      new Notification('МастерОФФ', { body: 'Уведомления включены! Вы будете знать о статусе заказа.', icon: LOGO_IMG });
+      navigator.serviceWorker.ready.then((reg) => {
+        reg.active?.postMessage({ type: 'SHOW_NOTIFICATION', title: 'МастерОФФ', body: 'Уведомления включены! Вы будете знать о статусе заказа.', icon: LOGO_IMG });
+      });
     }
   };
 

@@ -12,6 +12,10 @@ const LOGO = "https://cdn.poehali.dev/projects/3056daaf-9ac7-4923-8d17-8291d5ab8
 
 const queryClient = new QueryClient();
 
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('/sw.js').catch(() => {});
+}
+
 function SplashScreen({ onDone }: { onDone: () => void }) {
   const [phase, setPhase] = useState<"in" | "hold" | "out">("in");
 
