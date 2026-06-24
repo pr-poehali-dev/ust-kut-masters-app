@@ -104,7 +104,6 @@ export default function Index() {
 function Header() {
   return (
     <div className="px-5 pt-8 pb-4 flex items-center justify-between">
-      <img src={LOGO_IMG} alt="МастерОФФ" className="h-10 w-auto object-contain" style={{ filter: 'brightness(0) invert(1)' }} />
       <div className="flex items-center gap-2">
         <div className="flex items-center gap-1.5 bg-[#1e1e1e] border border-[#2a2a2a] rounded-xl px-3 py-1.5">
           <Icon name="MapPin" size={13} className="text-[#FFD600]" />
