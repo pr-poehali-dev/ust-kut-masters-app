@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import Icon from '@/components/ui/icon';
 
 type AudioCtxType = typeof AudioContext;
@@ -21,6 +21,26 @@ function playNotificationSound() {
     gain.gain.exponentialRampToValueAtTime(0.001, t + 0.35);
     osc.start(t);
     osc.stop(t + 0.35);
+  });
+}
+
+function playMasterAlertSound() {
+  const Ctx = window.AudioContext || window.webkitAudioContext;
+  if (!Ctx) return;
+  const ctx = new Ctx();
+  [520, 520, 660].forEach((freq, i) => {
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    osc.type = 'square';
+    osc.frequency.value = freq;
+    const t = ctx.currentTime + i * 0.15;
+    gain.gain.setValueAtTime(0, t);
+    gain.gain.linearRampToValueAtTime(0.15, t + 0.01);
+    gain.gain.exponentialRampToValueAtTime(0.001, t + 0.13);
+    osc.start(t);
+    osc.stop(t + 0.13);
   });
 }
 
@@ -68,6 +88,14 @@ export default function Index() {
   const [showMasterLogin, setShowMasterLogin] = useState(false);
 
   const newRequests = orders.filter((o) => o.status === 'Новая заявка');
+  const prevCountRef = useRef(newRequests.length);
+
+  useEffect(() => {
+    if (masterAuth && newRequests.length > prevCountRef.current) {
+      playMasterAlertSound();
+    }
+    prevCountRef.current = newRequests.length;
+  }, [newRequests.length, masterAuth]);
 
   const createOrder = (data: { service: string; addr: string; phone: string; master: string }) => {
     const id = '#' + (1043 + orders.length);
@@ -78,6 +106,7 @@ export default function Index() {
     setOrderTarget(null);
     setToast('Заявка отправлена! Мастер скоро откликнется');
     setTimeout(() => setToast(null), 3000);
+    if (masterAuth) playMasterAlertSound();
   };
 
   const acceptRequest = (id: string) => {
