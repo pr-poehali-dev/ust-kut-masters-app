@@ -116,10 +116,17 @@ export default function Index() {
     setTimeout(() => setToast(null), 3500);
   };
 
+  const sendPush = (title: string, body: string) => {
+    if ('Notification' in window && Notification.permission === 'granted') {
+      new Notification(title, { body, icon: LOGO_IMG });
+    }
+  };
+
   const setEnRoute = (id: string) => {
     setOrders((prev) => prev.map((o) => o.id === id ? { ...o, status: 'В пути', step: 1 } : o));
     setToast('🚗 Мастер выехал к вам!');
     setTimeout(() => setToast(null), 3000);
+    sendPush('МастерОФФ — Мастер в пути', 'Мастер выехал к вам. Ожидайте через 15–30 минут.');
   };
 
   const completeOrder = (id: string) => {
@@ -127,6 +134,7 @@ export default function Index() {
     playNotificationSound();
     setToast('🎉 Заказ выполнен!');
     setTimeout(() => setToast(null), 3000);
+    sendPush('МастерОФФ — Заказ выполнен', 'Работа завершена. Спасибо, что выбрали МастерОФФ!');
   };
 
   const declineRequest = (id: string) => {
@@ -177,6 +185,23 @@ export default function Index() {
 }
 
 function Header() {
+  const [notifStatus, setNotifStatus] = useState<NotificationPermission | 'unsupported'>(
+    'Notification' in window ? Notification.permission : 'unsupported'
+  );
+
+  const handleBell = async () => {
+    if (notifStatus === 'unsupported') return;
+    if (notifStatus === 'granted') {
+      new Notification('МастерОФФ', { body: 'Уведомления уже включены!', icon: LOGO_IMG });
+      return;
+    }
+    const result = await Notification.requestPermission();
+    setNotifStatus(result);
+    if (result === 'granted') {
+      new Notification('МастерОФФ', { body: 'Уведомления включены! Вы будете знать о статусе заказа.', icon: LOGO_IMG });
+    }
+  };
+
   return (
     <div className="px-5 pt-8 pb-4 flex items-center justify-between">
       <div className="flex items-center gap-2">
@@ -184,9 +209,9 @@ function Header() {
           <Icon name="MapPin" size={13} className="text-[#FFD600]" />
           <span className="text-xs font-bold text-white">Усть-Кут</span>
         </div>
-        <button className="relative w-10 h-10 rounded-xl bg-[#1e1e1e] border border-[#2a2a2a] flex items-center justify-center">
-          <Icon name="Bell" size={18} className="text-white" />
-          <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-[#FFD600] rounded-full" />
+        <button onClick={handleBell} className="relative w-10 h-10 rounded-xl bg-[#1e1e1e] border border-[#2a2a2a] flex items-center justify-center">
+          <Icon name="Bell" size={18} className={notifStatus === 'granted' ? 'text-[#FFD600]' : 'text-white'} />
+          {notifStatus !== 'granted' && <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-[#FFD600] rounded-full" />}
         </button>
       </div>
     </div>
