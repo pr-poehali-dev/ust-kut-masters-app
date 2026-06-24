@@ -249,15 +249,15 @@ function HomeScreen({ onOrder, onCategory, onCallMaster }: { onOrder: (m: typeof
       </div>
 
       {/* Phone strip */}
-      <div className="mx-5 mt-3 bg-[#1e1e1e] border border-[#2a2a2a] rounded-2xl px-4 py-3 flex items-center justify-between">
+      <a href="tel:+79500990931" className="mx-5 mt-3 bg-[#1e1e1e] border border-[#2a2a2a] rounded-2xl px-4 py-3 flex items-center justify-between">
         <div>
           <p className="text-[#666] text-[10px] font-semibold uppercase tracking-wider">Звоните напрямую</p>
           <p className="text-white font-black text-lg tracking-wide">+7 (950) 099-09-31</p>
         </div>
-        <button className="bg-[#FFD600] text-black w-11 h-11 rounded-xl flex items-center justify-center">
+        <span className="bg-[#FFD600] text-black w-11 h-11 rounded-xl flex items-center justify-center">
           <Icon name="Phone" size={20} />
-        </button>
-      </div>
+        </span>
+      </a>
 
       {/* Services */}
       <div className="px-5 mt-6">
