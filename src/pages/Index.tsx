@@ -465,11 +465,11 @@ function OrderModal({ target, onClose, onSubmit }: { target: { master?: typeof m
 }
 
 function SupportScreen() {
-  const items = [
-    { icon: 'Phone', title: 'Позвонить', sub: '+7 (950) 099-09-31', color: 'bg-[#FFD600] text-black' },
-    { icon: 'MessageCircle', title: 'Написать в Telegram', sub: '@masteroff_uk', color: 'bg-[#1e1e1e] text-white border border-[#2a2a2a]' },
-    { icon: 'CircleHelp', title: 'Частые вопросы', sub: 'Оплата, гарантии, отмена', color: 'bg-[#1e1e1e] text-white border border-[#2a2a2a]' },
-    { icon: 'ShieldCheck', title: 'Гарантия качества', sub: 'Все мастера проверены', color: 'bg-[#1e1e1e] text-white border border-[#2a2a2a]' },
+  const contacts = [
+    { icon: 'Phone', title: 'Позвонить', sub: '+7 (950) 099-09-31', href: 'tel:+79500990931', yellow: true },
+    { icon: 'MessageCircle', title: 'Написать в Telegram', sub: 'Открыть чат', href: 'https://t.me/masteroff_uk', yellow: false },
+    { icon: 'Globe', title: 'Наш сайт', sub: 'servismasteroff.ru', href: 'https://servismasteroff.ru', yellow: false },
+    { icon: 'ShieldCheck', title: 'Гарантия качества', sub: 'Все мастера проверены', href: null, yellow: false },
   ];
   return (
     <div className="animate-fade-in">
@@ -478,18 +478,24 @@ function SupportScreen() {
         <p className="text-[#666] text-sm mt-1">На связи 24/7</p>
       </div>
       <div className="px-5 space-y-3">
-        {items.map((it) => (
-          <button key={it.title} className={`w-full ${it.color} rounded-2xl p-4 flex items-center gap-4 hover:opacity-90 transition`}>
-            <span className={`w-12 h-12 rounded-xl ${it.icon === 'Phone' ? 'bg-black' : 'bg-[#FFD600]'} flex items-center justify-center flex-shrink-0`}>
-              <Icon name={it.icon} size={22} className={it.icon === 'Phone' ? 'text-[#FFD600]' : 'text-black'} />
-            </span>
-            <div className="flex-1 text-left">
-              <p className="font-bold text-sm">{it.title}</p>
-              <p className={`text-xs mt-0.5 ${it.icon === 'Phone' ? 'text-black/70' : 'text-[#666]'}`}>{it.sub}</p>
-            </div>
-            <Icon name="ChevronRight" size={18} className={it.icon === 'Phone' ? 'text-black/40' : 'text-[#444]'} />
-          </button>
-        ))}
+        {contacts.map((it) => {
+          const inner = (
+            <>
+              <span className={`w-12 h-12 rounded-xl ${it.yellow ? 'bg-black' : 'bg-[#FFD600]'} flex items-center justify-center flex-shrink-0`}>
+                <Icon name={it.icon} size={22} className={it.yellow ? 'text-[#FFD600]' : 'text-black'} />
+              </span>
+              <div className="flex-1 text-left">
+                <p className="font-bold text-sm">{it.title}</p>
+                <p className={`text-xs mt-0.5 ${it.yellow ? 'text-black/70' : 'text-[#666]'}`}>{it.sub}</p>
+              </div>
+              <Icon name="ChevronRight" size={18} className={it.yellow ? 'text-black/40' : 'text-[#444]'} />
+            </>
+          );
+          const cls = `w-full ${it.yellow ? 'bg-[#FFD600] text-black' : 'bg-[#1e1e1e] text-white border border-[#2a2a2a]'} rounded-2xl p-4 flex items-center gap-4 hover:opacity-90 transition`;
+          return it.href
+            ? <a key={it.title} href={it.href} target={it.href.startsWith('http') ? '_blank' : undefined} rel="noopener noreferrer" className={cls}>{inner}</a>
+            : <div key={it.title} className={cls}>{inner}</div>;
+        })}
       </div>
       <div className="px-5 mt-5">
         <div className="bg-[#1a1a1a] border border-[#2a2a2a] rounded-2xl p-4">
