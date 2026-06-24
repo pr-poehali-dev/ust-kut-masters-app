@@ -2,7 +2,7 @@ import { useState } from 'react';
 import Icon from '@/components/ui/icon';
 
 const MAP_IMG = 'https://cdn.poehali.dev/projects/3056daaf-9ac7-4923-8d17-8291d5ab8cd2/files/8d3b0a2c-604f-4aa0-8df1-bf12a18bdddd.jpg';
-const LOGO_IMG = 'https://cdn.poehali.dev/projects/3056daaf-9ac7-4923-8d17-8291d5ab8cd2/bucket/cc7ca709-8648-45a6-a737-40523b8e5be3.jpg';
+const LOGO_IMG = 'https://cdn.poehali.dev/projects/3056daaf-9ac7-4923-8d17-8291d5ab8cd2/bucket/01d0c1d5-6c45-4cb0-95fb-1b90edd87102.png';
 
 type Tab = 'home' | 'map' | 'orders' | 'support' | 'master';
 
@@ -104,7 +104,7 @@ export default function Index() {
 function Header() {
   return (
     <div className="px-5 pt-8 pb-4 flex items-center justify-between">
-      <img src={LOGO_IMG} alt="МастерОФФ" className="h-9 w-auto object-contain" />
+      <img src={LOGO_IMG} alt="МастерОФФ" className="h-10 w-auto object-contain" style={{ filter: 'brightness(0) invert(1)' }} />
       <div className="flex items-center gap-2">
         <div className="flex items-center gap-1.5 bg-[#1e1e1e] border border-[#2a2a2a] rounded-xl px-3 py-1.5">
           <Icon name="MapPin" size={13} className="text-[#FFD600]" />
@@ -131,13 +131,8 @@ function HomeScreen({ onOrder, onCategory, onCallMaster }: { onOrder: (m: typeof
             <Icon name="Wrench" size={120} className="text-black" />
           </div>
           <div className="relative">
-            <span className="inline-block bg-black text-[#FFD600] text-[10px] font-black tracking-widest uppercase px-3 py-1 rounded-full mb-3">
-              🔧 Усть-Кут · Быстро · Надёжно
-            </span>
-            <h1 className="font-display font-black text-black text-3xl leading-[1.1] uppercase">
-              Мастер<br />на час
-            </h1>
-            <p className="text-black/70 text-sm mt-2 font-medium">Приедем за 15–30 минут.<br />Оплата после работы.</p>
+            <img src={LOGO_IMG} alt="МастерОФФ" className="h-16 w-auto object-contain mb-4" />
+            <p className="text-black/70 text-sm font-medium">Приедем за 15–30 минут.<br />Оплата после работы.</p>
             <button onClick={onCallMaster} className="mt-4 bg-black text-[#FFD600] font-black text-sm px-6 py-3 rounded-xl uppercase tracking-wide hover:opacity-90 transition flex items-center gap-2">
               <Icon name="Phone" size={16} />Вызвать мастера
             </button>
