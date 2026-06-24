@@ -1,22 +1,22 @@
 {
-  "name": "Мастер на час — Усть-Кут",
-  "short_name": "Мастер",
+  "name": "Мастер ОФФ — Усть-Кут",
+  "short_name": "МастерОФФ",
   "description": "Вызов мастеров на дом в Усть-Куте. Сантехник, электрик, сборка мебели и другие услуги.",
   "start_url": "/",
   "display": "standalone",
   "orientation": "portrait",
-  "background_color": "#f4f6fb",
-  "theme_color": "#3b5bfc",
+  "background_color": "#1a1a1a",
+  "theme_color": "#1a1a1a",
   "lang": "ru",
   "icons": [
     {
-      "src": "https://cdn.poehali.dev/projects/3056daaf-9ac7-4923-8d17-8291d5ab8cd2/files/99a2ae0e-bc05-45d7-998d-76f85126503f.jpg",
+      "src": "https://cdn.poehali.dev/projects/3056daaf-9ac7-4923-8d17-8291d5ab8cd2/bucket/cc7ca709-8648-45a6-a737-40523b8e5be3.jpg",
       "sizes": "512x512",
       "type": "image/jpeg",
       "purpose": "any maskable"
     },
     {
-      "src": "https://cdn.poehali.dev/projects/3056daaf-9ac7-4923-8d17-8291d5ab8cd2/files/99a2ae0e-bc05-45d7-998d-76f85126503f.jpg",
+      "src": "https://cdn.poehali.dev/projects/3056daaf-9ac7-4923-8d17-8291d5ab8cd2/bucket/cc7ca709-8648-45a6-a737-40523b8e5be3.jpg",
       "sizes": "192x192",
       "type": "image/jpeg",
       "purpose": "any"

@@ -2,6 +2,7 @@ import { useState } from 'react';
 import Icon from '@/components/ui/icon';
 
 const MAP_IMG = 'https://cdn.poehali.dev/projects/3056daaf-9ac7-4923-8d17-8291d5ab8cd2/files/8d3b0a2c-604f-4aa0-8df1-bf12a18bdddd.jpg';
+const LOGO_IMG = 'https://cdn.poehali.dev/projects/3056daaf-9ac7-4923-8d17-8291d5ab8cd2/bucket/cc7ca709-8648-45a6-a737-40523b8e5be3.jpg';
 
 type Tab = 'home' | 'map' | 'orders' | 'support' | 'master';
 
@@ -104,17 +105,17 @@ export default function Index() {
 function Header() {
   return (
     <div className="px-5 pt-6 pb-4 flex items-center justify-between">
-      <div>
-        <p className="text-xs text-muted-foreground">Ваш город</p>
-        <div className="flex items-center gap-1">
-          <Icon name="MapPin" size={16} className="text-accent" />
-          <h2 className="font-display font-bold text-lg">Усть-Кут</h2>
+      <img src={LOGO_IMG} alt="Мастер ОФФ" className="h-10 w-auto rounded-lg object-contain" />
+      <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1 bg-secondary rounded-xl px-3 py-1.5">
+          <Icon name="MapPin" size={13} className="text-accent" />
+          <span className="text-xs font-semibold">Усть-Кут</span>
         </div>
+        <button className="relative w-11 h-11 rounded-2xl bg-secondary flex items-center justify-center">
+          <Icon name="Bell" size={20} className="text-primary" />
+          <span className="absolute top-2 right-2 w-2.5 h-2.5 bg-accent rounded-full ring-2 ring-secondary" />
+        </button>
       </div>
-      <button className="relative w-11 h-11 rounded-2xl bg-secondary flex items-center justify-center">
-        <Icon name="Bell" size={20} className="text-primary" />
-        <span className="absolute top-2 right-2 w-2.5 h-2.5 bg-accent rounded-full ring-2 ring-secondary" />
-      </button>
     </div>
   );
 }
@@ -130,6 +131,7 @@ function HomeScreen({ onOrder, onCategory, onCallMaster }: { onOrder: (m: typeof
           <div className="absolute -right-4 bottom-0 opacity-20 animate-float">
             <Icon name="Wrench" size={90} />
           </div>
+          <img src={LOGO_IMG} alt="Мастер ОФФ" className="h-8 w-auto rounded-md object-contain mb-3 relative" />
           <h1 className="font-display font-extrabold text-2xl leading-tight relative">Мастер на час<br />за 15 минут</h1>
           <p className="text-sm text-primary-foreground/80 mt-2 relative max-w-[70%]">Проверенные специалисты Усть-Кута. Оплата после работы.</p>
           <button onClick={onCallMaster} className="mt-4 bg-accent text-accent-foreground font-semibold text-sm px-5 py-2.5 rounded-xl relative hover:opacity-90 transition">
@@ -363,8 +365,9 @@ function MasterScreen({ requests, onAccept }: { requests: Order[]; onAccept: (id
       <div className="px-5 pt-6">
         <div className="bg-primary rounded-3xl p-5 text-primary-foreground relative overflow-hidden">
           <div className="absolute -right-6 -top-6 w-32 h-32 rounded-full bg-accent/30 blur-2xl" />
+          <img src={LOGO_IMG} alt="Мастер ОФФ" className="h-7 w-auto rounded-md object-contain mb-4 relative" />
           <div className="flex items-center gap-3 relative">
-            <div className="w-14 h-14 rounded-2xl bg-white/15 flex items-center justify-center font-display font-bold text-lg">АП</div>
+            <div className="w-14 h-14 rounded-2xl bg-accent flex items-center justify-center font-display font-bold text-lg text-accent-foreground">АП</div>
             <div>
               <p className="font-display font-bold text-lg">Алексей Петров</p>
               <p className="text-xs text-primary-foreground/80">Сантехник · онлайн</p>
