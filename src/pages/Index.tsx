@@ -34,11 +34,15 @@ const initialOrders: Order[] = [
 
 const statusFlow = ['Принят', 'Выехал', 'В пути', 'Работает', 'Выполнен'];
 
+const MASTER_PASSWORD = '1234';
+
 export default function Index() {
   const [tab, setTab] = useState<Tab>('home');
   const [orders, setOrders] = useState<Order[]>(initialOrders);
   const [orderTarget, setOrderTarget] = useState<{ master?: typeof masters[0]; service?: string } | null>(null);
   const [toast, setToast] = useState<string | null>(null);
+  const [masterAuth, setMasterAuth] = useState(false);
+  const [showMasterLogin, setShowMasterLogin] = useState(false);
 
   const newRequests = orders.filter((o) => o.status === 'Новая заявка');
 
@@ -66,7 +70,8 @@ export default function Index() {
         {tab === 'map' && <MapScreen />}
         {tab === 'orders' && <OrdersScreen orders={orders} onNew={() => setTab('home')} />}
         {tab === 'support' && <SupportScreen />}
-        {tab === 'master' && <MasterScreen requests={newRequests} onAccept={acceptRequest} />}
+        {tab === 'master' && masterAuth && <MasterScreen requests={newRequests} onAccept={acceptRequest} onLogout={() => { setMasterAuth(false); setTab('home'); }} />}
+        {tab === 'master' && !masterAuth && <MasterLoginScreen onSuccess={() => setMasterAuth(true)} onBack={() => setTab('home')} />}
 
         {orderTarget && (
           <OrderModal target={orderTarget} onClose={() => setOrderTarget(null)} onSubmit={createOrder} />
@@ -409,7 +414,86 @@ function SupportScreen() {
   );
 }
 
-function MasterScreen({ requests, onAccept }: { requests: Order[]; onAccept: (id: string) => void }) {
+function MasterLoginScreen({ onSuccess, onBack }: { onSuccess: () => void; onBack: () => void }) {
+  const [pass, setPass] = useState('');
+  const [error, setError] = useState(false);
+  const [shake, setShake] = useState(false);
+
+  const handleSubmit = () => {
+    if (pass === MASTER_PASSWORD) {
+      onSuccess();
+    } else {
+      setError(true);
+      setShake(true);
+      setTimeout(() => setShake(false), 500);
+      setTimeout(() => setError(false), 2000);
+      setPass('');
+    }
+  };
+
+  return (
+    <div className="animate-fade-in min-h-screen flex flex-col">
+      <div className="px-5 pt-8">
+        <button onClick={onBack} className="flex items-center gap-2 text-[#666] text-sm font-semibold hover:text-white transition">
+          <Icon name="ChevronLeft" size={18} />Назад
+        </button>
+      </div>
+
+      <div className="flex-1 flex flex-col items-center justify-center px-5 pb-24">
+        <div className="w-full max-w-sm">
+          <div className="w-20 h-20 rounded-2xl bg-[#FFD600] flex items-center justify-center mx-auto mb-6">
+            <Icon name="BriefcaseBusiness" size={40} className="text-black" />
+          </div>
+
+          <h2 className="font-display font-black text-white text-2xl uppercase text-center tracking-tight">Вход для мастеров</h2>
+          <p className="text-[#555] text-sm text-center mt-2 mb-8">Введите пароль, чтобы войти в личный кабинет</p>
+
+          <div
+            style={{
+              transform: shake ? 'translateX(0)' : 'none',
+              animation: shake ? 'shake 0.4s ease' : 'none',
+            }}
+          >
+            <label className="text-[#FFD600] text-[10px] font-black uppercase tracking-widest">Пароль</label>
+            <input
+              type="password"
+              value={pass}
+              onChange={(e) => setPass(e.target.value)}
+              onKeyDown={(e) => e.key === 'Enter' && handleSubmit()}
+              placeholder="••••••••"
+              className={`w-full mt-1.5 mb-2 bg-[#1a1a1a] border ${error ? 'border-red-500' : 'border-[#2a2a2a]'} text-white rounded-xl px-4 py-4 text-lg text-center outline-none focus:border-[#FFD600] transition placeholder:text-[#333] tracking-widest`}
+            />
+            {error && (
+              <p className="text-red-400 text-xs text-center mb-4 animate-fade-in">Неверный пароль. Попробуйте ещё раз.</p>
+            )}
+          </div>
+
+          <button
+            onClick={handleSubmit}
+            disabled={!pass}
+            className="w-full mt-4 bg-[#FFD600] text-black font-black py-4 rounded-xl uppercase tracking-wide disabled:opacity-30 transition hover:opacity-90 text-sm"
+          >
+            Войти в кабинет
+          </button>
+
+          <p className="text-[#333] text-xs text-center mt-6">Пароль выдаётся администратором МастерОФФ</p>
+        </div>
+      </div>
+
+      <style>{`
+        @keyframes shake {
+          0%, 100% { transform: translateX(0); }
+          20% { transform: translateX(-8px); }
+          40% { transform: translateX(8px); }
+          60% { transform: translateX(-6px); }
+          80% { transform: translateX(6px); }
+        }
+      `}</style>
+    </div>
+  );
+}
+
+function MasterScreen({ requests, onAccept, onLogout }: { requests: Order[]; onAccept: (id: string) => void; onLogout: () => void }) {
   const stats = [
     { label: 'Заказов', value: '4' },
     { label: 'Заработано', value: '5 400' },
@@ -417,7 +501,13 @@ function MasterScreen({ requests, onAccept }: { requests: Order[]; onAccept: (id
   ];
   return (
     <div className="animate-fade-in">
-      <div className="px-5 pt-8">
+      <div className="px-5 pt-8 pb-2 flex items-center justify-between">
+        <h2 className="font-display font-black text-white text-xl uppercase tracking-tight">Кабинет мастера</h2>
+        <button onClick={onLogout} className="flex items-center gap-1.5 text-[#555] text-xs font-bold hover:text-red-400 transition">
+          <Icon name="LogOut" size={15} />Выйти
+        </button>
+      </div>
+      <div className="px-5">
         <div className="bg-[#FFD600] rounded-2xl p-5 relative overflow-hidden">
           <div className="absolute right-4 bottom-0 opacity-10">
             <Icon name="BriefcaseBusiness" size={100} className="text-black" />
