@@ -634,6 +634,39 @@ function MasterScreen({ requests, activeOrders, onAccept, onEnRoute, onComplete,
         </div>
       </div>
 
+      {/* Активные заказы — В работе */}
+      {activeOrders.length > 0 && (
+        <div className="px-5 mt-5">
+          <h3 className="font-display font-black text-white text-lg uppercase tracking-tight mb-3">В работе</h3>
+          <div className="space-y-3">
+            {activeOrders.map((o) => (
+              <div key={o.id} className="bg-[#1a1a1a] border border-emerald-500/30 rounded-2xl p-4 animate-fade-in">
+                <div className="flex items-start justify-between gap-2 mb-1">
+                  <p className="font-bold text-white text-sm">{o.service}</p>
+                  <span className={`text-[10px] font-black px-2 py-0.5 rounded-full ${o.status === 'В пути' ? 'bg-blue-500/20 text-blue-400' : 'bg-orange-500/20 text-orange-400'}`}>
+                    {o.status}
+                  </span>
+                </div>
+                {o.addr && <p className="text-xs text-[#666] flex items-center gap-1"><Icon name="MapPin" size={12} />{o.addr}</p>}
+                {o.phone && <p className="text-xs text-[#666] mt-0.5 flex items-center gap-1"><Icon name="Phone" size={12} />{o.phone}</p>}
+                <div className="flex gap-2 mt-3">
+                  {o.status === 'Принят' && (
+                    <button onClick={() => onEnRoute(o.id)} className="flex-1 bg-blue-500 text-white rounded-xl py-2.5 text-xs font-black uppercase hover:opacity-90 transition flex items-center justify-center gap-1.5">
+                      <Icon name="Car" size={14} />Мастер в пути
+                    </button>
+                  )}
+                  {o.status === 'В пути' && (
+                    <button onClick={() => onComplete(o.id)} className="flex-1 bg-emerald-500 text-white rounded-xl py-2.5 text-xs font-black uppercase hover:opacity-90 transition flex items-center justify-center gap-1.5">
+                      <Icon name="CircleCheck" size={14} />Заказ выполнен
+                    </button>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
       <div className="px-5 mt-5">
         <div className="flex items-center gap-2 mb-4">
           <h3 className="font-display font-black text-white text-lg uppercase tracking-tight">Новые заявки</h3>
@@ -668,38 +701,6 @@ function MasterScreen({ requests, activeOrders, onAccept, onEnRoute, onComplete,
         </div>
       </div>
 
-      {/* Активные заказы */}
-      {activeOrders.length > 0 && (
-        <div className="px-5 mt-5 mb-4">
-          <h3 className="font-display font-black text-white text-lg uppercase tracking-tight mb-3">В работе</h3>
-          <div className="space-y-3">
-            {activeOrders.map((o) => (
-              <div key={o.id} className="bg-[#1a1a1a] border border-emerald-500/30 rounded-2xl p-4 animate-fade-in">
-                <div className="flex items-start justify-between gap-2 mb-1">
-                  <p className="font-bold text-white text-sm">{o.service}</p>
-                  <span className={`text-[10px] font-black px-2 py-0.5 rounded-full ${o.status === 'В пути' ? 'bg-blue-500/20 text-blue-400' : 'bg-emerald-500/20 text-emerald-400'}`}>
-                    {o.status}
-                  </span>
-                </div>
-                {o.addr && <p className="text-xs text-[#666] flex items-center gap-1"><Icon name="MapPin" size={12} />{o.addr}</p>}
-                {o.phone && <p className="text-xs text-[#666] mt-0.5 flex items-center gap-1"><Icon name="Phone" size={12} />{o.phone}</p>}
-                <div className="flex gap-2 mt-3">
-                  {o.status === 'Принят' && (
-                    <button onClick={() => onEnRoute(o.id)} className="flex-1 bg-blue-500 text-white rounded-xl py-2.5 text-xs font-black uppercase hover:opacity-90 transition flex items-center justify-center gap-1.5">
-                      <Icon name="Car" size={14} />Мастер в пути
-                    </button>
-                  )}
-                  {o.status === 'В пути' && (
-                    <button onClick={() => onComplete(o.id)} className="flex-1 bg-emerald-500 text-white rounded-xl py-2.5 text-xs font-black uppercase hover:opacity-90 transition flex items-center justify-center gap-1.5">
-                      <Icon name="CircleCheck" size={14} />Заказ выполнен
-                    </button>
-                  )}
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
     </div>
   );
 }
