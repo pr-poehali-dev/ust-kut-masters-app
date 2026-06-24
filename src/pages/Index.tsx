@@ -602,23 +602,13 @@ function MasterScreen({ requests, onAccept, onLogout }: { requests: Order[]; onA
               </div>
             </div>
           ))}
-          {[
-            { id: 'demo1', service: 'Течёт кран на кухне', addr: 'ул. Речников, 8', price: '900 ₽', phone: '+7 950 111-22-33' },
-            { id: 'demo2', service: 'Установить унитаз', addr: 'мкр. Лена, 22', price: '1 500 ₽', phone: '+7 950 444-55-66' },
-          ].map((r) => (
-            <div key={r.id} className="bg-[#1a1a1a] border border-[#2a2a2a] rounded-2xl p-4">
-              <div className="flex items-center justify-between">
-                <p className="font-bold text-white text-sm">{r.service}</p>
-                <span className="font-black text-[#FFD600] text-sm">{r.price}</span>
-              </div>
-              <p className="text-xs text-[#666] mt-1 flex items-center gap-1"><Icon name="MapPin" size={12} />{r.addr}</p>
-              <p className="text-xs text-[#666] mt-0.5 flex items-center gap-1"><Icon name="Phone" size={12} />{r.phone}</p>
-              <div className="flex gap-2 mt-3">
-                <button className="flex-1 bg-[#FFD600] text-black rounded-xl py-2.5 text-xs font-black uppercase hover:opacity-90 transition">Принять</button>
-                <button className="flex-1 bg-[#111] border border-[#2a2a2a] text-[#666] rounded-xl py-2.5 text-xs font-bold uppercase">Отклонить</button>
-              </div>
+          {requests.length === 0 && (
+            <div className="text-center py-10 text-[#444]">
+              <Icon name="Inbox" size={36} className="mx-auto mb-3 opacity-40" />
+              <p className="text-sm font-semibold">Новых заявок пока нет</p>
+              <p className="text-xs mt-1">Они появятся здесь автоматически</p>
             </div>
-          ))}
+          )}
         </div>
       </div>
     </div>
