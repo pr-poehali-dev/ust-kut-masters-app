@@ -45,14 +45,39 @@ function SplashScreen({ onDone }: { onDone: () => void }) {
         pointerEvents: "none",
       }} />
 
+      {/* расходящиеся кольца */}
+      {phase === "hold" && [0, 1, 2].map((i) => (
+        <div key={i} style={{
+          position: "absolute",
+          width: 120, height: 120,
+          borderRadius: "50%",
+          border: "2px solid #FFD600",
+          opacity: 0,
+          animation: `ripple 1.8s ease-out ${i * 0.5}s infinite`,
+          pointerEvents: "none",
+        }} />
+      ))}
+
       {/* логотип */}
       <div style={{
         transform: phase === "in" ? "scale(0.7)" : phase === "hold" ? "scale(1)" : "scale(1.05)",
         opacity: phase === "in" ? 0 : 1,
         transition: "transform 0.55s cubic-bezier(0.34,1.56,0.64,1), opacity 0.4s ease",
+        animation: phase === "hold" ? "logoPulse 2s ease-in-out infinite" : "none",
       }}>
-        <img src={LOGO} alt="МастерОФФ" style={{ height: 72, width: "auto", borderRadius: 14 }} />
+        <img src={LOGO} alt="МастерОФФ" style={{ height: 72, width: "auto", borderRadius: 14, display: "block" }} />
       </div>
+
+      <style>{`
+        @keyframes ripple {
+          0%   { transform: scale(1); opacity: 0.6; }
+          100% { transform: scale(3.5); opacity: 0; }
+        }
+        @keyframes logoPulse {
+          0%, 100% { transform: scale(1); filter: drop-shadow(0 0 0px #FFD600); }
+          50%       { transform: scale(1.07); filter: drop-shadow(0 0 14px #FFD600aa); }
+        }
+      `}</style>
 
       {/* подпись */}
       <div style={{
